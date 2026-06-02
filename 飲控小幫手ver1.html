@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Daily Nourishment</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 🥑 酪梨綠色系 Avocado Green Theme */
+  --bg: #F4F7F2;          /* 淺酪梨底色 */
+  --surface: #FFFFFF;     /* 卡片白 */
+  --surface2: #E8EFE3;    /* 淺綠次要背景 */
+  --border: #CDE0C2;      /* 邊框綠 */
+  --text: #2B3A1C;        /* 深橄欖綠文字 */
+  --text2: #5B7546;       /* 中等綠文字 */
+  --text3: #8DA875;       /* 淺綠文字 */
+  --primary: #6A994E;     /* 鮮豔酪梨綠 (取代原本的橘色) */
+  --primary-dark: #386641;
+  --primary-pale: #EBF2E5;
+  
+  /* 巨量營養素專屬顏色 (與酪梨色搭配的輔助色) */
+  --prot-color: #4A7C59;
+  --carb-color: #D4A373;
+  --fat-color: #E9C46A;
+
+  --r: 16px;
+  --r-sm: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  /* 針對 iPhone 底部 Home 條預留空間 */
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  -webkit-tap-highlight-color: transparent; /* 移除 iOS 點擊閃爍 */
+}
+
+/* ── Top bar ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  /* 針對 iPhone 瀏海預留空間 */
+  padding: calc(14px + env(safe-area-inset-top)) 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 10px rgba(43,58,28,0.03);
+}
+.topbar-left { display: flex; align-items: baseline; gap: 10px; }
+.topbar-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.topbar-date {
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 300;
+}
+.key-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 6px 10px 6px 8px;
+  cursor: pointer;
+}
+.key-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; flex-shrink:0; }
+.key-dot.active { background: var(--primary); }
+.key-wrap input {
+  background: none; border: none; outline: none;
+  font-family: 'DM Sans', sans-serif;
+  /* iOS 防放大機制：input 必須大於等於 16px */
+  font-size: 16px; 
+  color: var(--text2);
+  width: 140px;
+}
+.key-wrap input::placeholder { color: var(--text3); font-size: 14px; }
+
+/* ── Container ── */
+.container { max-width: 500px; margin: 0 auto; padding: 20px 16px; }
+
+/* ── Section label ── */
+.section-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+
+/* ── Meal type strip ── */
+.meal-strip {
+  display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto;
+  scrollbar-width: none; -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+.meal-strip::-webkit-scrollbar { display: none; }
+.meal-chip {
+  flex-shrink: 0;
+  /* iOS 觸控優化：增加高度 */
+  padding: 10px 18px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.meal-chip:hover { border-color: var(--primary); color: var(--primary); }
+.meal-chip.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* ── Input card ── */
+.input-card {
+  background: var(--surface);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(106,153,78,0.05);
+}
+.food-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 16px;
+  font-family: 'DM Sans', sans-serif;
+  /* iOS 防放大機制：textarea 必須大於等於 16px */
+  font-size: 16px; 
+  font-weight: 400;
+  color: var(--text);
+  resize: none;
+  min-height: 90px;
+  outline: none;
+  line-height: 1.6;
+}
+.food-textarea::placeholder { color: var(--text3); font-style: italic; }
+
+.input-divider { height: 1px; background: var(--surface2); margin: 0 16px; }
+
+/* ── Image zone ── */
+.img-zone {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
+}
+.img-zone:hover { background: var(--surface2); }
+.img-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.img-zone-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--primary-pale);
+  color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.img-zone-text { font-size: 14px; color: var(--text2); font-weight: 500;}
+.img-zone-text span { font-size: 12px; color: var(--text3); display: block; margin-top: 2px; font-weight: 400;}
+.img-preview-row {
+  padding: 0 16px 12px;
+  display: none;
+}
+.img-preview-row.show { display: block; }
+.img-preview {
+  width: 100%; max-height: 200px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  display: block;
+}
+.img-remove-row {
+  display: flex; justify-content: flex-end; margin-top: 8px;
+}
+.img-remove-btn {
+  background: none; border: none;
+  font-size: 13px; color: var(--text3);
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  padding: 4px 8px; border-radius: 6px;
+}
+.img-remove-btn:hover { color: #E76F51; background: #fcece8; }
+
+/* ── Action row ── */
+.action-row {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--surface);
+}
+.btn-save {
+  flex: 1;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  /* 觸控優化：高度 44px */
+  padding: 12px 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 44px;
+}
+.btn-save:hover { background: var(--primary-dark); }
+.btn-save:active { transform: scale(0.98); }
+.btn-estimate {
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--r-sm);
+  padding: 12px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  min-height: 44px;
+}
+.btn-estimate:hover { background: var(--primary-pale); }
+.btn-estimate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Log ── */
+.log-empty {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--r);
+  padding: 36px 20px;
+  text-align: center;
+}
+.log-empty p {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+.log-empty small {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+.log-group { margin-bottom: 12px; }
+.log-group-head {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 0 4px;
+  margin-bottom: 6px;
+}
+.log-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.log-item-main { flex: 1; min-width: 0; }
+.log-item-text {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.5;
+  font-weight: 400;
+}
+.log-item-meta {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+.macros-row {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+}
+.mpill {
+  font-size: 11px; padding: 4px 10px;
+  border-radius: 99px; font-weight: 600;
+}
+.mpill-cal { background: var(--primary-pale); color: var(--primary-dark); }
+.mpill-p { background: #E8F0E8; color: var(--prot-color); }
+.mpill-c { background: #F8ECE0; color: var(--carb-color); }
+.mpill-f { background: #FCF4E0; color: var(--fat-color); }
+
+.log-thumb {
+  width: 60px; height: 60px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  border: 1px solid var(--surface2);
+}
+.log-del {
+  background: none; border: none;
+  color: var(--text3); font-size: 16px;
+  cursor: pointer; padding: 4px;
+  flex-shrink: 0; transition: color 0.15s;
+}
+.log-del:hover { color: #E76F51; }
+
+/* ── Analyze card ── */
+.analyze-wrap { margin-top: 32px; }
+.analyze-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(106,153,78,0.05);
+}
+.analyze-top {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface2);
+}
+.analyze-top-text h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 19px;
+  color: var(--text);
+}
+.analyze-top-text p {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.btn-analyze {
+  background: var(--text);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 12px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  min-height: 44px;
+}
+.btn-analyze:hover { background: var(--primary); }
+.btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.analyze-body { padding: 20px; }
+
+/* Macro grid */
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.mbox {
+  background: var(--bg);
+  border-radius: var(--r-sm);
+  padding: 16px 8px;
+  text-align: center;
+  border: 1px solid var(--surface2);
+}
+.mbox-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px;
+  color: var(--text);
+  line-height: 1;
+}
+.mbox-unit { font-size: 11px; color: var(--text3); font-weight: 400; margin-top: 2px; }
+.mbox-lbl { font-size: 12px; color: var(--text2); margin-top: 6px; font-weight: 500; }
+.mbox.cal .mbox-num { color: var(--primary-dark); }
+.mbox.prot .mbox-num { color: var(--prot-color); }
+.mbox.carb .mbox-num { color: var(--carb-color); }
+.mbox.fat .mbox-num { color: var(--fat-color); }
+
+/* Advice */
+.advice-block {
+  background: var(--primary-pale);
+  border-radius: var(--r-sm);
+  padding: 16px;
+  border-left: 4px solid var(--primary);
+}
+.advice-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+.advice-text {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* Loading */
+.loading-row {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 0;
+}
+.loading-row.show { display: flex; }
+.spin {
+  width: 22px; height: 22px;
+  border: 3px solid var(--surface2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-row p { font-size: 14px; color: var(--text2); font-weight: 500; }
+
+.result-area { display: none; }
+.result-area.show { display: block; }
+
+/* Export */
+.export-row { margin-top: 16px; }
+.copy-row { display: flex; gap: 10px; }
+.btn-copy {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--text2); font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 44px;
+}
+.btn-copy:hover { background: var(--surface2); color: var(--text); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text);
+  color: var(--surface);
+  padding: 12px 24px;
+  border-radius: 99px;
+  font-size: 14px; font-weight: 500;
+  z-index: 999;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  white-space: nowrap;
+  max-width: 90vw;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Session key note */
+.key-note {
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 400;
+  text-align: center;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  display: flex; justify-content: center; align-items: center; gap: 4px;
+}
+
+@media(max-width:400px) {
+  .macro-grid { grid-template-columns: repeat(2,1fr); }
+  .key-wrap input { width: 100px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-title">Nourish</span>
+    <span class="topbar-date" id="todayLabel">—</span>
+  </div>
+  <div class="key-wrap" title="API Key — 僅儲存於本地瀏覽器">
+    <div class="key-dot" id="keyDot"></div>
+    <input type="password" id="apiKeyInput" placeholder="Gemini API key"
+      oninput="onKeyInput()" autocomplete="off">
+  </div>
+</div>
+
+<div class="container">
+  <p class="key-note" id="keyNote">🔒 金鑰僅存於當前視窗，關閉分頁即自動銷毀</p>
+
+  <div class="section-label">Meal Type</div>
+  <div class="meal-strip" id="mealStrip">
+    <button class="meal-chip active" data-meal="Breakfast" onclick="selectMeal(this)">Breakfast</button>
+    <button class="meal-chip" data-meal="Lunch" onclick="selectMeal(this)">Lunch</button>
+    <button class="meal-chip" data-meal="Dinner" onclick="selectMeal(this)">Dinner</button>
+    <button class="meal-chip" data-meal="Snack" onclick="selectMeal(this)">Snack</button>
+  </div>
+
+  <div class="input-card">
+    <textarea class="food-textarea" id="foodInput"
+      placeholder="記錄你的餐點，例如：酪梨鮮蝦沙拉佐橄欖油..."></textarea>
+
+    <div class="input-divider"></div>
+
+    <div class="img-zone" id="imgZone">
+      <input type="file" id="imgFile" accept="image/*" onchange="onImgSelect(event)">
+      <div class="img-zone-icon">📷</div>
+      <div class="img-zone-text">
+        Attach a photo
+        <span>AI 會自動為您辨識食物並估算</span>
+      </div>
+    </div>
+
+    <div class="img-preview-row" id="imgPreviewRow">
+      <img class="img-preview" id="imgPreview" src="" alt="food photo">
+      <div class="img-remove-row">
+        <button class="img-remove-btn" onclick="removeImg()">✕ 移除照片</button>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-save" onclick="saveEntry()">Save Meal</button>
+      <button class="btn-estimate" id="estimateBtn" onclick="quickEstimate()">Quick Estimate</button>
+    </div>
+  </div>
+
+  <div class="section-label">Today's Log</div>
+  <div id="logArea"></div>
+
+  <div class="analyze-wrap">
+    <div class="section-label">Nutrition Summary</div>
+    <div class="analyze-card">
+      <div class="analyze-top">
+        <div class="analyze-top-text">
+          <h3>Full-day Analysis</h3>
+          <p>總結今日營養，Gemini 將為您結算熱量與提供飲食建議。</p>
+        </div>
+        <button class="btn-analyze" id="analyzeBtn" onclick="fullAnalyze()">Analyze</button>
+      </div>
+      <div class="analyze-body">
+        <div class="loading-row" id="loadingRow">
+          <div class="spin"></div>
+          <p>AI 正在結算中，請稍候...</p>
+        </div>
+        <div class="result-area" id="resultArea">
+          <div class="macro-grid" id="macroGrid"></div>
+          <div class="advice-block">
+            <div class="advice-label">Dietitian's Note</div>
+            <div class="advice-text" id="adviceText"></div>
+          </div>
+          <div class="export-row">
+            <div class="copy-row">
+              <button class="btn-copy" onclick="copyReport()">📋 複製報告至 Notion</button>
+            </div>
+          </div>
+        </div>
+        <p id="emptyHint" style="font-size:14px;color:var(--text3);text-align:center;margin-top:10px;">
+          記錄幾筆餐點後，即可執行全日結算。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Constants ──
+const STORAGE_KEY = 'nourish_log_v3'; // 更新版本號避免衝突
+let selectedMeal = 'Breakfast';
+let imgBase64 = null;
+let lastReport = null;
+
+// ── Date formatting ──
+function todayStr() { return new Date().toLocaleDateString('en-CA'); }
+function todayDisplay() { return new Date().toLocaleDateString('en-US', { weekday:'short', month:'long', day:'numeric' }); }
+function nowTime() { return new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }); }
+
+// ── Security: HTML Escape (防禦 XSS) ──
+function esc(s) { 
+  if(typeof s !== 'string') return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); 
+}
+
+// ── API Key Management ──
+function getKey() { return sessionStorage.getItem('gemini_key') || ''; }
+function onKeyInput() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  sessionStorage.setItem('gemini_key', val);
+  document.getElementById('keyDot').className = 'key-dot' + (val.length > 10 ? ' active' : '');
+}
+function restoreKey() {
+  const k = getKey();
+  if (k) {
+    document.getElementById('apiKeyInput').value = k;
+    document.getElementById('keyDot').className = 'key-dot active';
+  }
+}
+
+// ── LocalStorage ──
+function loadLog() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const d = JSON.parse(raw);
+    if (d.date !== todayStr()) { localStorage.removeItem(STORAGE_KEY); return []; }
+    return d.entries || [];
+  } catch { return []; }
+}
+function saveLog(entries) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: todayStr(), entries }));
+  } catch(e) { 
+    toast('儲存空間已滿，請刪除部分含有照片的舊紀錄。'); 
+    console.error('LocalStorage Error:', e);
+  }
+}
+
+// ── Toast ──
+function toast(msg, ms=2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), ms);
+}
+
+// ── UI Interactions ──
+function selectMeal(btn) {
+  document.querySelectorAll('.meal-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedMeal = btn.dataset.meal;
+}
+
+// ── 🚀 Bug Fix: Image Compression (防 LocalStorage 爆滿) ──
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_DIMENSION = 800; // 限制最大寬高
+
+        if (width > height) {
+          if (width > MAX_DIMENSION) {
+            height *= MAX_DIMENSION / width;
+            width = MAX_DIMENSION;
+          }
+        } else {
+          if (height > MAX_DIMENSION) {
+            width *= MAX_DIMENSION / height;
+            height = MAX_DIMENSION;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        // 壓縮為 70% 畫質的 JPEG
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(compressedDataUrl);
+      };
+      img.onerror = () => reject(new Error('圖片載入失敗'));
+      img.src = event.target.result;
+    };
+    reader.onerror = () => reject(new Error('檔案讀取失敗'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onImgSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    toast('正在壓縮圖片...');
+    const compressedBase64 = await compressImage(file);
+    imgBase64 = compressedBase64.split(',')[1];
+    document.getElementById('imgPreview').src = compressedBase64;
+    document.getElementById('imgPreviewRow').classList.add('show');
+    toast('圖片載入完成');
+  } catch (err) {
+    toast('圖片處理發生錯誤');
+  }
+}
+
+function removeImg() {
+  imgBase64 = null;
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('imgPreviewRow').classList.remove('show');
+  document.getElementById('imgFile').value = '';
+}
+
+// ── CRUD ──
+function saveEntry() {
+  const text = document.getElementById('foodInput').value.trim();
+  if (!text && !imgBase64) { toast('請輸入餐點描述或附加照片。'); return; }
+  const entries = loadLog();
+  entries.push({
+    id: Date.now(),
+    meal: selectedMeal,
+    text: text || '(附照片紀錄)',
+    time: nowTime(),
+    img: imgBase64 ? 'data:image/jpeg;base64,' + imgBase64 : null,
+    macros: null
+  });
+  saveLog(entries);
+  document.getElementById('foodInput').value = '';
+  removeImg();
+  renderLog();
+  toast(`已儲存 ${selectedMeal} 紀錄 ✓`);
+}
+
+function delEntry(id) {
+  saveLog(loadLog().filter(e => e.id !== id));
+  renderLog();
+}
+
+function renderLog() {
+  const entries = loadLog();
+  const area = document.getElementById('logArea');
+  if (entries.length === 0) {
+    area.innerHTML = `<div class="log-empty">
+      <p>今日尚未有任何紀錄</p>
+      <small>您記錄的餐點將會顯示在這裡</small>
+    </div>`;
+    return;
+  }
+
+  const order = ['Breakfast','Lunch','Dinner','Snack'];
+  const groups = {};
+  entries.forEach(e => { (groups[e.meal] = groups[e.meal] || []).push(e); });
+
+  let html = '';
+  order.forEach(meal => {
+    if (!groups[meal]) return;
+    html += `<div class="log-group"><div class="log-group-head">${meal}</div>`;
+    groups[meal].forEach(e => {
+      const mp = e.macros ? `<div class="macros-row">
+        <span class="mpill mpill-cal">${esc(String(e.macros.calories))} kcal</span>
+        <span class="mpill mpill-p">P ${esc(String(e.macros.protein))}g</span>
+        <span class="mpill mpill-c">C ${esc(String(e.macros.carbs))}g</span>
+        <span class="mpill mpill-f">F ${esc(String(e.macros.fat))}g</span>
+      </div>` : '';
+      const thumb = e.img ? `<img class="log-thumb" src="${esc(e.img)}" alt="">` : '';
+      html += `<div class="log-item">
+        <div class="log-item-main">
+          <div class="log-item-text">${esc(e.text)}</div>
+          <div class="log-item-meta">${esc(e.time)}</div>
+          ${mp}
+        </div>
+        ${thumb}
+        <button class="log-del" onclick="delEntry(${e.id})" title="Remove">✕</button>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  area.innerHTML = html;
+}
+
+// ── Gemini API & Defensive Parsing ──
+async function gemini(prompt, imageB64) {
+  const key = getKey();
+  if (!key) throw new Error('請先在頂部輸入 Gemini API Key');
+  const parts = [];
+  if (imageB64) parts.push({ inline_data: { mime_type:'image/jpeg', data: imageB64 } });
+  parts.push({ text: prompt });
+  
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents:[{ parts }], generationConfig:{ temperature:0.1 } })
+    }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(()=>({}));
+    throw new Error(e?.error?.message || `API error ${res.status}`);
+  }
+  const d = await res.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// 🚀 Bug Fix: 更穩健的 JSON 解析正則表達式
+function parseJson(rawText) {
+  try {
+    // 嘗試直接解析
+    return JSON.parse(rawText);
+  } catch (e) {
+    // 若有 markdown 或是冗餘文字，擷取 {} 內的內容
+    const match = rawText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+    if (match) {
+      return JSON.parse(match[0]);
+    }
+    throw new Error('AI 回傳的格式不正確，無法解析為 JSON');
+  }
+}
+
+// ── Analysis Functions ──
+async function quickEstimate() {
+  const text = document.getElementById('foodInput').value.trim();
+  if (!text && !imgBase64) { toast('請輸入描述或附加照片。'); return; }
+  const btn = document.getElementById('estimateBtn');
+  btn.disabled = true; btn.textContent = 'Estimating...';
+  
+  const prompt = `You are a dietitian. ${imgBase64 ? 'Identify the food in the image, then ' : ''}estimate calories and macros for: ${text || '(see image)'}.
+Respond ONLY with a valid JSON object matching this schema:
+{"food":"Short name of the food","calories":number,"protein":number,"carbs":number,"fat":number}`;
+  
+  try {
+    const r = parseJson(await gemini(prompt, imgBase64));
+    toast(`${r.food} — 約 ${r.calories} kcal`, 4000);
+    if (!text && r.food) document.getElementById('foodInput').value = r.food;
+  } catch(e) { 
+    toast('估算失敗: ' + e.message, 4000); 
+  } finally { 
+    btn.disabled = false; btn.textContent = 'Quick Estimate'; 
+  }
+}
+
+async function fullAnalyze() {
+  const entries = loadLog();
+  if (!entries.length) { toast('尚未有紀錄，請先記錄餐點。'); return; }
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true; btn.textContent = 'Analyzing...';
+  document.getElementById('loadingRow').classList.add('show');
+  document.getElementById('resultArea').classList.remove('show');
+  document.getElementById('emptyHint').style.display = 'none';
+
+  const numbered = entries.map((e, i) => `${i}:[${e.meal}] ${e.text}`).join('\n');
+  const prompt = `You are a helpful dietitian. Analyze today's food log.
+For each numbered entry, estimate its individual macros. 
+Then provide daily totals and a short encouraging recommendation in Traditional Chinese (under 80 words).
+
+Food log:
+${numbered}
+
+Respond ONLY with a valid JSON object matching this exact structure, no markdown wrappers:
+{
+  "per_entry": [
+    {"index":0,"calories":0,"protein":0,"carbs":0,"fat":0}
+  ],
+  "total_calories": 0,
+  "protein": 0,
+  "carbs": 0,
+  "fat": 0,
+  "advice": "..."
+}`;
+
+  try {
+    const r = parseJson(await gemini(prompt, null));
+
+    if (Array.isArray(r.per_entry)) {
+      r.per_entry.forEach(item => {
+        if (entries[item.index]) {
+          entries[item.index].macros = {
+            calories: item.calories || 0,
+            protein: item.protein || 0,
+            carbs: item.carbs || 0,
+            fat: item.fat || 0
+          };
+        }
+      });
+      saveLog(entries);
+      renderLog();
+    }
+
+    lastReport = { ...r, date: todayDisplay(), entries: entries.map(e=>({meal:e.meal,text:e.text,macros:e.macros})) };
+    
+    // 使用 textContent 防範 XSS
+    document.getElementById('macroGrid').innerHTML = `
+      <div class="mbox cal"><div class="mbox-num">${esc(String(r.total_calories))}</div><div class="mbox-unit">kcal</div><div class="mbox-lbl">熱量</div></div>
+      <div class="mbox prot"><div class="mbox-num">${esc(String(r.protein))}</div><div class="mbox-unit">g</div><div class="mbox-lbl">蛋白質</div></div>
+      <div class="mbox carb"><div class="mbox-num">${esc(String(r.carbs))}</div><div class="mbox-unit">g</div><div class="mbox-lbl">碳水</div></div>
+      <div class="mbox fat"><div class="mbox-num">${esc(String(r.fat))}</div><div class="mbox-unit">g</div><div class="mbox-lbl">脂肪</div></div>`;
+    
+    document.getElementById('adviceText').textContent = r.advice;
+    document.getElementById('resultArea').classList.add('show');
+  } catch(e) {
+    toast('結算失敗: ' + e.message, 4000);
+    document.getElementById('emptyHint').style.display = 'block';
+  } finally {
+    document.getElementById('loadingRow').classList.remove('show');
+    btn.disabled = false; btn.textContent = 'Analyze';
+  }
+}
+
+function copyReport() {
+  if (!lastReport) return;
+  const r = lastReport;
+  const txt = [
+    `🥑 Daily Nourishment — ${r.date}`,
+    '',
+    '🍽️ 飲食日誌',
+    ...r.entries.map(e => `  [${e.meal}] ${e.text} (${e.macros ? e.macros.calories + 'kcal' : '未計算'})`),
+    '',
+    '📊 營養總結',
+    `  熱量   ${r.total_calories} kcal`,
+    `  蛋白質 ${r.protein} g`,
+    `  碳水   ${r.carbs} g`,
+    `  脂肪   ${r.fat} g`,
+    '',
+    "💡 營養師建議",
+    `  ${r.advice}`,
+    '',
+    '— Generated by Daily Nourishment × Gemini AI'
+  ].join('\n');
+  
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('已複製！可直接貼上至 Notion 或備忘錄 ✓'))
+    .catch(() => toast('複製失敗，請手動框選文字。'));
+}
+
+// ── Init ──
+document.getElementById('todayLabel').textContent = todayDisplay();
+restoreKey();
+renderLog();
+</script>
+</body>
+</html>
