@@ -850,9 +850,9 @@ async function fullAnalyze() {
   document.getElementById('emptyHint').style.display = 'none';
 
   const numbered = entries.map((e, i) => `${i}:[${e.meal}] ${e.text}`).join('\n');
-  const prompt = `You are a helpful dietitian. Analyze today's food log.
-For each numbered entry, estimate its individual macros. 
-Then provide daily totals and a short encouraging recommendation in Traditional Chinese (under 80 words).
+  const prompt = `You are a helpful dietitian. Analyze today's food log. 
+For each numbered entry, estimate its individual macros. Consider MyFitnessPal database or search online for certain food with brand name as needed. 
+Then provide daily totals and a short encouraging recommendation (for a 54kg female with fat loss goal) in Traditional Chinese (under 80 words).
 
 Food log:
 ${numbered}
