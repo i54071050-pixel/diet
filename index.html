@@ -831,13 +831,26 @@ Respond ONLY with a valid JSON object matching this schema:
   
   try {
     const r = parseJson(await gemini(prompt, imgBase64));
-    toast(`${r.food} — 約 ${r.calories} kcal`, 4000);
-    if (!text && r.food) document.getElementById('foodInput').value = r.food;
-  } catch(e) { 
-    toast('估算失敗: ' + e.message, 4000); 
-  } finally { 
-    btn.disabled = false; btn.textContent = 'Quick Estimate'; 
+toast(`${r.food} — 約 ${r.calories} kcal`, 4000);
+    const mealElement = document.getElementById('mealSelect');
+    const currentMeal = mealElement ? mealElement.value : 'Snack'; 
+    const entries = loadLog();
+    const newEntry = {
+   meal: currentMeal,
+  text: r.food,
+  macros: {
+    calories: r.calories || 0,
+    protein: r.protein || 0, // Fallback to 0 if your Quick prompt doesn't ask for these
+    carbs: r.carbs || 0,
+    fat: r.fat || 0
   }
+};
+
+entries.push(newEntry);
+saveLog(entries);
+renderLog();
+
+document.getElementById('foodInput').value = '';
 }
 
 async function fullAnalyze() {
