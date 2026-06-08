@@ -830,26 +830,40 @@ async function quickEstimate() {
   
   try {
     const r = parseJson(await gemini(prompt, imgBase64));
-toast(`${r.food} — 約 ${r.calories} kcal`, 4000);
-    const mealElement = document.getElementById('mealSelect');
-    const currentMeal = mealElement ? mealElement.value : 'Snack'; 
+    toast(`${r.food} — 約 ${r.calories} kcal`, 4000);
+    
     const entries = loadLog();
     const newEntry = {
-   meal: currentMeal,
-  text: r.food,
-  macros: {
-    calories: r.calories || 0,
-    protein: r.protein || 0, // Fallback to 0 if your Quick prompt doesn't ask for these
-    carbs: r.carbs || 0,
-    fat: r.fat || 0
+      id: Date.now(), // Added missing ID so the delete button works
+      time: nowTime(), // Added missing time for the UI log
+      meal: selectedMeal, // Fixed: Uses your global state instead of a missing HTML ID
+      text: r.food,
+      img: imgBase64 ? 'data:image/jpeg;base64,' + imgBase64 : null, // Keep image in log
+      macros: {
+        calories: r.calories || 0,
+        protein: r.protein || 0,
+        carbs: r.carbs || 0,
+        fat: r.fat || 0
+      }
+    };
+
+    entries.push(newEntry);
+    saveLog(entries);
+    renderLog();
+
+    // Clean up UI after successful estimation
+    document.getElementById('foodInput').value = '';
+    removeImg(); 
+
+  } catch(e) {
+    // Added missing catch block to prevent fatal crashes
+    toast('估算失敗: ' + e.message, 4000);
+    console.error(e);
+  } finally {
+    // Ensure button re-enables even if it fails
+    btn.disabled = false; 
+    btn.textContent = 'Quick Estimate';
   }
-};
-
-entries.push(newEntry);
-saveLog(entries);
-renderLog();
-
-document.getElementById('foodInput').value = '';
 }
 
 async function fullAnalyze() {
